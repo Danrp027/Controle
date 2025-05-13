@@ -1,0 +1,88 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff7e6;
+  margin: 0;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  background-color: #ffdc90;
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 100%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+h1 {
+  margin-bottom: 30px;
+  font-size: 28px;
+  color: #333;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.image-upload label {
+  margin-bottom: 10px;
+}
+
+.image-box {
+  border: 2px dashed #ccc;
+  padding: 30px;
+  text-align: center;
+  border-radius: 6px;
+  background-color: #fff;
+}
+
+.image-box input[type="file"] {
+  display: block;
+  margin: auto;
+}
+
+button {
+  margin-top: 30px;
+  padding: 14px;
+  background-color: #f7944d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+button:hover {
+  background-color: #e67d2d;
+}

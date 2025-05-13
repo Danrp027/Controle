@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Queijaria Chiabai - Produtos</title>
+  <link rel="stylesheet" href="produtoscad.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>Queijaria<br>Chiabai</h2>
+      <nav>
+        <ul>
+          <li><span>📊</span> Painel</li>
+          <li><span>🛒</span> Pedidos</li>
+          <li class="has-submenu active">
+            <div onclick="toggleSubmenu()">📦 Produtos ▾</div>
+            <ul class="submenu">
+              <li onclick="showSection('cadastro')">➕ Cadastrar Produto</li>
+              <li onclick="showSection('listar')">📋 Lista de Produtos</li>
+              <li onclick="showSection('estoque')">📉 Estoque Baixo</li>
+              <li onclick="showSection('relatorio')">📊 Relatório</li>
+            </ul>
+          </li>
+          <li><span>👥</span> Clientes</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section id="cadastro" class="section active">
+        <h1>Cadastro de Produtos</h1>
+        <form class="form-produto">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" />
+
+          <label for="categoria">Categoria</label>
+          <select id="categoria">
+            <option>Queijo</option>
+            <option>Leite</option>
+            <option>Picolé</option>
+            <option>Sorvete</option>
+          </select>
+
+          <label for="unidade">Unidade de medida</label>
+          <input type="text" id="unidade" placeholder="kg, litro, unidade..." />
+
+          <div class="row">
+            <div>
+              <label for="custo">Preço de custo</label>
+              <input type="text" id="custo" />
+            </div>
+            <div>
+              <label for="venda">Preço de venda</label>
+              <input type="text" id="venda" />
+            </div>
+          </div>
+
+          <label for="estoque">Estoque mínimo</label>
+          <input type="text" id="estoque" />
+
+          <div class="upload-box">
+            <p>📷<br />Imagem (opcional)</p>
+          </div>
+
+          <button type="submit">Salvar</button>
+        </form>
+      </section>
+
+      <section id="listar" class="section">
+        <h1>Lista de Produtos</h1>
+        <p>Aqui você verá todos os produtos cadastrados.</p>
+      </section>
+
+      <section id="estoque" class="section">
+        <h1>Produtos com Estoque Baixo</h1>
+        <p>Exibe alertas de produtos abaixo do estoque mínimo.</p>
+      </section>
+
+      <section id="relatorio" class="section">
+        <h1>Relatório de Produtos</h1>
+        <p>Gráficos e dados sobre as vendas e movimentações dos produtos.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function toggleSubmenu() {
+      const submenu = document.querySelector('.submenu');
+      submenu.classList.toggle('open');
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+</body>
+</html>
