@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Produtos</title>
+    <link rel="stylesheet" href="lista.css" />
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Produtos</h1>
+            <button id="novoProduto">+ Novo Produto</button>
+        </header>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagem</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço Unitário</th>
+                    <th>Quantidade em Estoque</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody id="tabelaProdutos">
+                <!-- Conteúdo dinâmico será injetado aqui pelo backend -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        async function carregarProdutos() {
+            try {
+                const resposta = await fetch('/api/produtos');
+                const produtos = await resposta.json();
+
+                const tabela = document.getElementById('tabelaProdutos');
+                tabela.innerHTML = ''; // Limpa a tabela antes de preencher
+
+                produtos.forEach(produto => {
+                    const tr = document.createElement('tr');
+
+                  tr.innerHTML = `
+  <td>${produto.id}</td>
+  <td>
+    ${produto.imagem ? `<img src="${produto.imagem}" alt="Imagem" width="60" height="60">` : 'Sem imagem'}
+  </td>
+  <td>${produto.nome}</td>
+  <td>${produto.categoria}</td>
+  <td>R$ ${parseFloat(produto.preco_venda).toFixed(2)}</td>
+  <td>${produto.quantidade_estoque ?? '-'}</td>
+  <td>
+    <button onclick="editarProduto(${produto.id})">✏️</button>
+    <button onclick="deletarProduto(${produto.id})">🗑️</button>
+  </td>
+`;
+
+
+                    tabela.appendChild(tr);
+                });
+            } catch (erro) {
+                console.error('Erro ao carregar produtos:', erro);
+            }
+        }
+
+        function editarProduto(id) {
+            window.location.href = `/editar.html?id=${id}`;
+        }
+
+        async function deletarProduto(id) {
+            if (confirm('Tem certeza que deseja deletar este produto?')) {
+                try {
+                    const resposta = await fetch(`/api/produtos/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (resposta.ok) {
+                        alert('Produto deletado com sucesso!');
+                        carregarProdutos(); // Recarrega a lista
+                    } else {
+                        alert('Erro ao deletar produto.');
+                    }
+                } catch (erro) {
+                    console.error('Erro ao deletar produto:', erro);
+                }
+            }
+        }
+
+        document.getElementById('novoProduto').addEventListener('click', () => {
+            window.location.href = '/cadastro.html'; // ajuste conforme o nome do seu HTML de cadastro
+        });
+
+        // Carrega os produtos ao abrir a página
+        carregarProdutos();
+    </script>
+
+</body>
+
+</html>

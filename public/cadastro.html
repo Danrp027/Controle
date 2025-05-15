@@ -29,11 +29,11 @@
     const formData = new FormData();
     formData.append('nome', nome);
     formData.append('categoria', categoria);
-    formData.append('unidade_medida', unidade); // nome correto da coluna no banco
-    formData.append('preco_custo', custo);
-    formData.append('preco_venda', venda);
+    formData.append('unidade', unidade); 
+    formData.append('custo', custo);
+    formData.append('venda', venda);
     formData.append('validade', validade);
-    formData.append('estoque_minimo', minimo);
+    formData.append('minimo', minimo);
     if (imagem) formData.append('imagem', imagem);
 
     fetch('/api/produtos', {
@@ -68,10 +68,11 @@
       <div class="form-group">
         <label for="categoria">Categoria</label>
         <select id="categoria" name="categoria">
-          <option>Queijo</option>
-          <option>Leite</option>
-          <option>Picolé</option>
-          <option>Sorvete</option>
+          <option disabled selected >ESCOLHA A CATEGORIA</option>
+          <option value="Queijo">Queijo</option>
+          <option value="Leite">Leite</option>
+          <option value="Picolé">Picolé</option>
+          <option value="Sorvete">Sorvete</option>
         </select>
       </div>
 
@@ -79,10 +80,10 @@
         <label for="unidade">Unidade de medida</label>
         <select id="unidade" name="unidade">
           <option disabled selected value="ESCOLHA A UNIDADE">ESCOLHA A UNIDADE DE MEDIDA</option>
-          <option>KG</option>
-          <option>G</option>
-          <option>UNIDADE</option>
-          <option>LITROS</option>
+          <option value="KG">KG</option>
+          <option value="G">G</option>
+          <option value="Unidade">UNIDADE</option>
+          <option value="L">LITROS</option>
         </select>
       </div>
 
