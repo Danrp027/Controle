@@ -8,8 +8,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     console.log('Banco conectado com sucesso!');
     criarTabelas();
+
   }
 });
+
+
 
 function criarTabelas() {
   // Produtos

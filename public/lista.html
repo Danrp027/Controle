@@ -29,7 +29,7 @@
             </thead>
 
             <tbody id="tabelaProdutos">
-                <!-- Conteúdo dinâmico será injetado aqui pelo backend -->
+              
             </tbody>
         </table>
     </div>
@@ -40,7 +40,7 @@
                 const produtos = await resposta.json();
 
                 const tabela = document.getElementById('tabelaProdutos');
-                tabela.innerHTML = ''; // Limpa a tabela antes de preencher
+                tabela.innerHTML = '';
 
                 produtos.forEach(produto => {
                     const tr = document.createElement('tr');
@@ -53,7 +53,7 @@
   <td>${produto.nome}</td>
   <td>${produto.categoria}</td>
   <td>R$ ${parseFloat(produto.preco_venda).toFixed(2)}</td>
-  <td>${produto.quantidade_estoque ?? '-'}</td>
+  <td>${produto.quantidade}</td>
   <td>
     <button onclick="editarProduto(${produto.id})">✏️</button>
     <button onclick="deletarProduto(${produto.id})">🗑️</button>
