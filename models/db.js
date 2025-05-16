@@ -8,13 +8,30 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     console.log('Banco conectado com sucesso!');
     criarTabelas();
+    
+  
 
   }
 });
 
 
 
+
+
 function criarTabelas() {
+  // Vendas
+  db.run(`
+ CREATE TABLE IF NOT EXISTS vendas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  produto_id INTEGER NOT NULL,
+  quantidade_vendida INTEGER NOT NULL,
+  data_venda TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (produto_id) REFERENCES produtos(id)
+);
+
+    )
+  `);
+  
   // Produtos
   db.run(`
     CREATE TABLE IF NOT EXISTS produtos (

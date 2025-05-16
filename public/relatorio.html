@@ -1,54 +1,158 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Relatórios de Produtos</title>
   <link rel="stylesheet" href="relatorio.css" />
 </head>
+
 <body>
   <div class="container">
-    <header>
-      <h1>Relatórios de Produtos</h1>
-    </header>
+    <h1>Relatórios de Produtos</h1>
+    <div class="tabs">
+      <button class="tab-button active" onclick="openTab('mais-vendidos', event)">Mais Vendidos</button>
+      <!-- faça o mesmo para os outros botões -->
 
-    <div class="relatorio-cards">
-      <div class="card">
-        <h2>Mais Vendidos</h2>
-        <p>Veja os produtos com maior volume de vendas no período selecionado.</p>
-        <button>Ver Relatório</button>
-      </div>
+      <button class="tab-button" onclick="openTab('menos-vendidos')">Menos Vendidos</button>
+      <button class="tab-button" onclick="openTab('estoque-atual')">Estoque Atual</button>
+      <button class="tab-button" onclick="openTab('estoque-baixo')">Estoque Baixo</button>
+      <button class="tab-button" onclick="openTab('fora-estoque')">Fora de Estoque</button>
+      <button class="tab-button" onclick="openTab('vencidos')">Vencidos / Próximos</button>
+      <button class="tab-button" onclick="openTab('lucro')">Lucro Unitário</button>
+      <button class="tab-button" onclick="openTab('movimentacao')">Movimentação</button>
+      <button class="tab-button" onclick="openTab('resumo')">Resumo Geral</button>
+      <button class="tab-button" onclick="openTab('comparativo')">Comparativo</button>
+    </div>
 
-      <div class="card">
-        <h2>Menos Vendidos</h2>
-        <p>Identifique os produtos com baixo giro no estoque.</p>
-        <button>Ver Relatório</button>
-      </div>
+    <div class="tab-content active" id="mais-vendidos">
+      <h2>Produtos Mais Vendidos</h2>
+      <p>Lista dos produtos com maior volume de vendas, incluindo quantidade e receita.</p>
+      <canvas id="graficoMaisVendidos" width="400" height="200"></canvas>
+    </div>
 
-      <div class="card">
-        <h2>Estoque Atual</h2>
-        <p>Visualize o estoque disponível por produto em tempo real.</p>
-        <button>Ver Relatório</button>
-      </div>
 
-      <div class="card">
-        <h2>Alertas de Estoque Baixo</h2>
-        <p>Lista de produtos abaixo do nível mínimo configurado.</p>
-        <button>Ver Relatório</button>
-      </div>
+    <div class="tab-content" id="menos-vendidos">
+      <h2>Produtos Menos Vendidos</h2>
+      <p>Produtos com pouca ou nenhuma saída.</p>
+    </div>
 
-      <div class="card">
-        <h2>Validade Próxima</h2>
-        <p>Relatório de produtos com data de validade próxima ou vencida.</p>
-        <button>Ver Relatório</button>
-      </div>
+    <div class="tab-content" id="estoque-atual">
+      <h2>Estoque Atual por Produto</h2>
+      <p>Lista com nome, categoria, quantidade atual e estoque mínimo.</p>
+    </div>
 
-      <div class="card">
-        <h2>Resumo Financeiro</h2>
-        <p>Total vendido, lucro estimado, e desempenho por categoria.</p>
-        <button>Ver Relatório</button>
-      </div>
+    <div class="tab-content" id="estoque-baixo">
+      <h2>Produtos com Estoque Baixo</h2>
+      <p>Produtos com quantidade abaixo do estoque mínimo.</p>
+    </div>
+
+    <div class="tab-content" id="fora-estoque">
+      <h2>Produtos Fora de Estoque</h2>
+      <p>Produtos que estão com quantidade zerada.</p>
+    </div>
+
+    <div class="tab-content" id="vencidos">
+      <h2>Produtos Vencidos ou Próximos da Validade</h2>
+      <p>Filtrados por vencidos e por vencimento em até 7/15 dias.</p>
+    </div>
+
+    <div class="tab-content" id="lucro">
+      <h2>Produtos com Maior Lucro Unitário</h2>
+      <p>Comparação entre preço de venda e custo.</p>
+    </div>
+
+    <div class="tab-content" id="movimentacao">
+      <h2>Movimentação de Produtos</h2>
+      <p>Entradas e saídas detalhadas por período.</p>
+    </div>
+
+    <div class="tab-content" id="resumo">
+      <h2>Resumo Geral dos Produtos</h2>
+      <ul>
+        <li>Total de produtos cadastrados</li>
+        <li>Total em estoque</li>
+        <li>Produtos abaixo do mínimo</li>
+        <li>Valor total em estoque</li>
+      </ul>
+    </div>
+
+    <div class="tab-content" id="comparativo">
+      <h2>Comparativo entre Produtos</h2>
+      <p>Selecione produtos para comparar vendas, lucro e estoque.</p>
     </div>
   </div>
+
+
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Script para carregar os dados e gerar o gráfico -->
+  <script>
+    let chartInstance = null;
+
+    async function carregarMaisVendidos() {
+      const resposta = await fetch("/api/produtos/relatorios/mais-vendidos")
+
+      const dados = await resposta.json();
+
+      const nomes = dados.map(p => p.nome);
+      const vendidos = dados.map(p => p.total_vendido);
+
+      const ctx = document.getElementById("graficoMaisVendidos").getContext("2d");
+
+      // Destroi gráfico anterior se existir
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: nomes,
+          datasets: [{
+            label: "Quantidade Vendida",
+            data: vendidos,
+            backgroundColor: "#4caf50"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "Produtos Mais Vendidos"
+            }
+          }
+        }
+      });
+    }
+
+
+    function openTab(tabId, event) {
+      document.querySelectorAll(".tab-content").forEach((tab) => {
+        tab.classList.remove("active");
+      });
+      document.querySelectorAll(".tab-button").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+      document.getElementById(tabId).classList.add("active");
+      event.target.classList.add("active");
+
+      if (tabId === "mais-vendidos") {
+        carregarMaisVendidos();
+      }
+    }
+
+
+    // Carrega o gráfico na primeira abertura da página
+    window.addEventListener("DOMContentLoaded", () => {
+      carregarMaisVendidos();
+    });
+  </script>
+
 </body>
-</html> 
+
+</html>

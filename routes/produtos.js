@@ -152,6 +152,34 @@ router.get("/:id", (req, res) => {
   });
 });
 
+// Relatório: Produtos mais vendidos
+router.get('/relatorios/mais-vendidos', (req, res) => {
+  const query = `
+    SELECT 
+      produtos.nome, 
+      SUM(vendas.quantidade_vendida) AS total_vendido
+    FROM 
+      vendas
+    JOIN 
+      produtos ON produtos.id = vendas.produto_id
+    GROUP BY 
+      produtos.id
+    ORDER BY 
+      total_vendido DESC
+    LIMIT 10
+  `;
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error('Erro ao buscar mais vendidos:', err);
+      return res.status(500).json({ erro: 'Erro ao gerar relatório' });
+    }
+    res.json(rows);
+  });
+});
+
+
+
 
 
 
