@@ -1,4 +1,4 @@
- body {
+    body {
       margin: 0;
       font-family: "Segoe UI", sans-serif;
       background-color: #fffdf5;
@@ -53,19 +53,10 @@
       display: block;
     }
 
-    .report-section {
-      margin-bottom: 2rem;
-    }
-
-    .report-section h2 {
-      font-size: 1.2rem;
-      margin-bottom: 0.75rem;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0.5rem;
+      margin-top: 1rem;
     }
 
     th, td {

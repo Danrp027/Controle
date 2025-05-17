@@ -204,33 +204,67 @@ router.get('/relatorios/menos-vendidos', (req, res) => {
   });
 });
 
-// Relatório: Estoque Atual por Produto
-router.get('/relatorios/estoque-atual', (req, res) => {
-  const query = `
-    SELECT 
-      produtos.nome,
-      produtos.categoria,
-      produtos.estoque_minimo,
-      COALESCE(SUM(CASE WHEN estoque.tipo = 'entrada' THEN estoque.quantidade ELSE 0 END), 0) -
-      COALESCE(SUM(CASE WHEN estoque.tipo = 'saida' THEN estoque.quantidade ELSE 0 END), 0) AS quantidade_atual
-    FROM 
-      produtos
-    LEFT JOIN 
-      estoque ON produtos.id = estoque.produto_id
-    GROUP BY 
-      produtos.id
-    ORDER BY 
-      quantidade_atual ASC
-  `;
 
-  db.all(query, [], (err, rows) => {
+// GET /api/produtos/relatorios/estoque-baixo
+router.get('/relatorios/estoque-baixo', (req, res) => {
+  const sql = `
+    SELECT nome, categoria, quantidade AS quantidade_atual, estoque_minimo
+    FROM produtos
+    WHERE quantidade < estoque_minimo
+  `;
+  db.all(sql, [], (err, rows) => {
     if (err) {
-      console.error('Erro ao buscar estoque atual:', err);
-      return res.status(500).json({ erro: 'Erro ao gerar relatório' });
+      res.status(500).json({ erro: 'Erro ao buscar produtos com estoque baixo' });
+    } else {
+      res.json(rows);
     }
-    res.json(rows);
   });
 });
+
+router.get("/relatorios/vencidos", async (req, res) => {
+  
+const sql = `
+   SELECT nome, categoria, validade
+    FROM produtos
+    WHERE DATE(validade) <= DATE('now', '+15 day')
+    ORDER BY validade ASC
+  `;
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ erro: 'Erro ao buscar produtos Vencido ou Proximos' });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+ 
+
+
+router.get("/relatorios/movimentacao", (req, res) => {
+  const sql = `
+    SELECT 
+      m.id,
+      p.nome AS produto,
+      m.tipo,
+      m.quantidade,
+      m.data_movimentacao,
+      m.observacao
+    FROM movimentacoes m
+    JOIN produtos p ON m.produto_id = p.id
+    ORDER BY m.data_movimentacao DESC
+  `;
+
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ erro: 'Erro ao buscar movimentações de produtos' });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
+
+
 
 
 
