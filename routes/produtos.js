@@ -178,6 +178,62 @@ router.get('/relatorios/mais-vendidos', (req, res) => {
   });
 });
 
+// Relatório: Produtos menos vendidos
+router.get('/relatorios/menos-vendidos', (req, res) => {
+  const query = `
+    SELECT 
+      produtos.nome, 
+      COALESCE(SUM(vendas.quantidade_vendida), 0) AS total_vendido
+    FROM 
+      produtos
+    LEFT JOIN 
+      vendas ON produtos.id = vendas.produto_id
+    GROUP BY 
+      produtos.id
+    ORDER BY 
+      total_vendido ASC
+    LIMIT 10
+  `;
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error('Erro ao buscar menos vendidos:', err);
+      return res.status(500).json({ erro: 'Erro ao gerar relatório' });
+    }
+    res.json(rows);
+  });
+});
+
+// Relatório: Estoque Atual por Produto
+router.get('/relatorios/estoque-atual', (req, res) => {
+  const query = `
+    SELECT 
+      produtos.nome,
+      produtos.categoria,
+      produtos.estoque_minimo,
+      COALESCE(SUM(CASE WHEN estoque.tipo = 'entrada' THEN estoque.quantidade ELSE 0 END), 0) -
+      COALESCE(SUM(CASE WHEN estoque.tipo = 'saida' THEN estoque.quantidade ELSE 0 END), 0) AS quantidade_atual
+    FROM 
+      produtos
+    LEFT JOIN 
+      estoque ON produtos.id = estoque.produto_id
+    GROUP BY 
+      produtos.id
+    ORDER BY 
+      quantidade_atual ASC
+  `;
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error('Erro ao buscar estoque atual:', err);
+      return res.status(500).json({ erro: 'Erro ao gerar relatório' });
+    }
+    res.json(rows);
+  });
+});
+
+
+
 
 
 

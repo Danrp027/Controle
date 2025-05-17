@@ -15,8 +15,9 @@
       <button class="tab-button active" onclick="openTab('mais-vendidos', event)">Mais Vendidos</button>
       <!-- faça o mesmo para os outros botões -->
 
-      <button class="tab-button" onclick="openTab('menos-vendidos')">Menos Vendidos</button>
-      <button class="tab-button" onclick="openTab('estoque-atual')">Estoque Atual</button>
+      <button class="tab-button" onclick="openTab('menos-vendidos', event)">Menos Vendidos</button>
+      <button class="tab-button" onclick="openTab('estoque-atual', event)">Estoque Atual</button>
+
       <button class="tab-button" onclick="openTab('estoque-baixo')">Estoque Baixo</button>
       <button class="tab-button" onclick="openTab('fora-estoque')">Fora de Estoque</button>
       <button class="tab-button" onclick="openTab('vencidos')">Vencidos / Próximos</button>
@@ -26,64 +27,80 @@
       <button class="tab-button" onclick="openTab('comparativo')">Comparativo</button>
     </div>
 
-    <div class="tab-content active" id="mais-vendidos">
-      <h2>Produtos Mais Vendidos</h2>
-      <p>Lista dos produtos com maior volume de vendas, incluindo quantidade e receita.</p>
-      <canvas id="graficoMaisVendidos" width="400" height="200"></canvas>
+     <div class="tab-content active" id="mais-vendidos">
+      <div class="report-section">
+        <h2>Produtos Mais Vendidos</h2>
+        <canvas id="graficoMaisVendidos" width="400" height="200"></canvas>
+      </div>
     </div>
 
-
     <div class="tab-content" id="menos-vendidos">
-      <h2>Produtos Menos Vendidos</h2>
-      <p>Produtos com pouca ou nenhuma saída.</p>
+      <div class="report-section">
+        <h2>Produtos Menos Vendidos</h2>
+        <canvas id="graficoMenosVendidos" width="400" height="200"></canvas>
+      </div>
     </div>
 
     <div class="tab-content" id="estoque-atual">
-      <h2>Estoque Atual por Produto</h2>
-      <p>Lista com nome, categoria, quantidade atual e estoque mínimo.</p>
+      <div class="report-section">
+        <h2>Estoque Atual</h2>
+        <table id="tabelaEstoqueAtual">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Quantidade Atual</th>
+              <th>Estoque Mínimo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Preenchido dinamicamente -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="tab-content" id="estoque-baixo">
-      <h2>Produtos com Estoque Baixo</h2>
-      <p>Produtos com quantidade abaixo do estoque mínimo.</p>
-    </div>
-
-    <div class="tab-content" id="fora-estoque">
-      <h2>Produtos Fora de Estoque</h2>
-      <p>Produtos que estão com quantidade zerada.</p>
-    </div>
-
-    <div class="tab-content" id="vencidos">
-      <h2>Produtos Vencidos ou Próximos da Validade</h2>
-      <p>Filtrados por vencidos e por vencimento em até 7/15 dias.</p>
-    </div>
-
-    <div class="tab-content" id="lucro">
-      <h2>Produtos com Maior Lucro Unitário</h2>
-      <p>Comparação entre preço de venda e custo.</p>
+      <div class="report-section">
+        <h2>Produtos com Estoque Baixo</h2>
+        <p>Lista dos produtos com quantidade abaixo do estoque mínimo.</p>
+        <!-- Conteúdo será inserido com JS -->
+      </div>
     </div>
 
     <div class="tab-content" id="movimentacao">
-      <h2>Movimentação de Produtos</h2>
-      <p>Entradas e saídas detalhadas por período.</p>
-    </div>
-
-    <div class="tab-content" id="resumo">
-      <h2>Resumo Geral dos Produtos</h2>
-      <ul>
-        <li>Total de produtos cadastrados</li>
-        <li>Total em estoque</li>
-        <li>Produtos abaixo do mínimo</li>
-        <li>Valor total em estoque</li>
-      </ul>
-    </div>
-
-    <div class="tab-content" id="comparativo">
-      <h2>Comparativo entre Produtos</h2>
-      <p>Selecione produtos para comparar vendas, lucro e estoque.</p>
+      <div class="report-section">
+        <h2>Movimentação de Produtos</h2>
+        <p>Entradas e saídas detalhadas por período.</p>
+        <!-- Conteúdo será inserido com JS -->
+      </div>
     </div>
   </div>
 
+<script>
+  function openTab(tabId, event) {
+    // Oculta todos os conteúdos
+    document.querySelectorAll(".tab-content").forEach((tab) => {
+      tab.classList.remove("active");
+    });
+
+    // Remove classe ativa de todos os botões
+    document.querySelectorAll(".tab-button").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    // Mostra aba selecionada
+    document.getElementById(tabId).classList.add("active");
+    event.target.classList.add("active");
+
+    // Se precisar carregar dados, você pode chamar a função aqui
+    if (tabId === "mais-vendidos") carregarMaisVendidos();
+    if (tabId === "menos-vendidos") carregarMenosVendidos();
+    if (tabId === "estoque-atual") carregarEstoqueAtual();
+    if (tabId === "estoque-baixo") carregarEstoqueBaixo();
+    if (tabId === "movimentacao") carregarMovimentacaoProdutos();
+  }
+</script>
 
 
   <!-- Chart.js CDN -->
@@ -130,21 +147,84 @@
       });
     }
 
+    async function carregarMenosVendidos() {
+  const resposta = await fetch("/api/produtos/relatorios/menos-vendidos");
 
-    function openTab(tabId, event) {
-      document.querySelectorAll(".tab-content").forEach((tab) => {
-        tab.classList.remove("active");
-      });
-      document.querySelectorAll(".tab-button").forEach((btn) => {
-        btn.classList.remove("active");
-      });
-      document.getElementById(tabId).classList.add("active");
-      event.target.classList.add("active");
+  const dados = await resposta.json();
 
-      if (tabId === "mais-vendidos") {
-        carregarMaisVendidos();
+  const nomes = dados.map(p => p.nome);
+  const vendidos = dados.map(p => p.total_vendido);
+
+  const ctx = document.getElementById("graficoMenosVendidos").getContext("2d");
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: nomes,
+      datasets: [{
+        label: "Quantidade Vendida",
+        data: vendidos,
+        backgroundColor: "#f44336"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: "Produtos Menos Vendidos"
+        }
       }
     }
+  });
+}
+
+async function carregarEstoqueAtual() {
+  const resposta = await fetch("/api/produtos/relatorios/estoque-atual");
+  const dados = await resposta.json();
+
+  const tbody = document.querySelector("#tabelaEstoqueAtual tbody");
+  tbody.innerHTML = "";
+
+  dados.forEach(produto => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${produto.nome}</td>
+      <td>${produto.categoria}</td>
+      <td>${produto.quantidade_atual}</td>
+      <td>${produto.estoque_minimo}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+
+
+
+
+    function openTab(tabId, event) {
+  document.querySelectorAll(".tab-content").forEach((tab) => {
+    tab.classList.remove("active");
+  });
+  document.querySelectorAll(".tab-button").forEach((btn) => {
+    btn.classList.remove("active");
+  });
+  document.getElementById(tabId).classList.add("active");
+  event.target.classList.add("active");
+
+  if (tabId === "mais-vendidos") {
+    carregarMaisVendidos();
+  } else if (tabId === "menos-vendidos") {
+    carregarMenosVendidos();
+  } else if (tabId === "estoque-atual") {
+    carregarEstoqueAtual();
+  }
+}
+
 
 
     // Carrega o gráfico na primeira abertura da página
@@ -152,6 +232,8 @@
       carregarMaisVendidos();
     });
   </script>
+
+  
 
 </body>
 
