@@ -14,11 +14,13 @@
 
     <!-- Navegação -->
     <div class="tabs">
-      <button class="tab-button active" onclick="openTab('mais-vendidos', event)">Mais Vendidos</button>
-      <button class="tab-button" onclick="openTab('menos-vendidos', event)">Menos Vendidos</button>
-      <button class="tab-button" onclick="openTab('estoque-baixo', event)">Estoque Baixo</button>
-      <button class="tab-button" onclick="openTab('vencidos', event)">Vencidos / Próximos</button>
-      <button class="tab-button" onclick="openTab('movimentacao', event)">Movimentação</button>
+      <button class="tab-button active" onclick="openTab('mais-vendidos', event)">💰 Mais Vendidos</button>
+      <button class="tab-button" onclick="openTab('menos-vendidos', event)">📉 Menos Vendidos</button>
+      <button class="tab-button" onclick="openTab('estoque-baixo', event)">🪫Estoque Baixo</button>
+      <button class="tab-button" onclick="openTab('vencidos', event)">🗑️ Vencidos / Próximos</button>
+     
+
+
     </div>
 
     <!-- Conteúdo das abas -->
@@ -56,113 +58,107 @@
       </table>
     </div>
 
-
-    <div class="tab-content" id="movimentacao">
-      <h2>Movimentação de Produtos</h2>
-      <p>Entradas e saídas detalhadas por período.</p>
-    </div>
-  </div>
+    
 
 
 
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Script para carregar os dados e gerar o gráfico -->
+    <script>
+      let chartInstance = null;
 
-  <!-- Script para carregar os dados e gerar o gráfico -->
-  <script>
-    let chartInstance = null;
+      async function carregarMaisVendidos() {
+        const resposta = await fetch("/api/produtos/relatorios/mais-vendidos")
 
-    async function carregarMaisVendidos() {
-      const resposta = await fetch("/api/produtos/relatorios/mais-vendidos")
+        const dados = await resposta.json();
 
-      const dados = await resposta.json();
+        const nomes = dados.map(p => p.nome);
+        const vendidos = dados.map(p => p.total_vendido);
 
-      const nomes = dados.map(p => p.nome);
-      const vendidos = dados.map(p => p.total_vendido);
+        const ctx = document.getElementById("graficoMaisVendidos").getContext("2d");
 
-      const ctx = document.getElementById("graficoMaisVendidos").getContext("2d");
+        // Destroi gráfico anterior se existir
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
 
-      // Destroi gráfico anterior se existir
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: nomes,
-          datasets: [{
-            label: "Quantidade Vendida",
-            data: vendidos,
-            backgroundColor: "#4caf50"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: {
-              display: true,
-              text: "Produtos Mais Vendidos"
+        chartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: nomes,
+            datasets: [{
+              label: "Quantidade Vendida",
+              data: vendidos,
+              backgroundColor: "#4caf50"
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Produtos Mais Vendidos"
+              }
             }
           }
-        }
-      });
-    }
-
-    async function carregarMenosVendidos() {
-      const resposta = await fetch("/api/produtos/relatorios/menos-vendidos");
-
-      const dados = await resposta.json();
-
-      const nomes = dados.map(p => p.nome);
-      const vendidos = dados.map(p => p.total_vendido);
-
-      const ctx = document.getElementById("graficoMenosVendidos").getContext("2d");
-
-      if (chartInstance) {
-        chartInstance.destroy();
+        });
       }
 
-      chartInstance = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: nomes,
-          datasets: [{
-            label: "Quantidade Vendida",
-            data: vendidos,
-            backgroundColor: "#f44336"
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: {
-              display: true,
-              text: "Produtos Menos Vendidos"
+      async function carregarMenosVendidos() {
+        const resposta = await fetch("/api/produtos/relatorios/menos-vendidos");
+
+        const dados = await resposta.json();
+
+        const nomes = dados.map(p => p.nome);
+        const vendidos = dados.map(p => p.total_vendido);
+
+        const ctx = document.getElementById("graficoMenosVendidos").getContext("2d");
+
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: nomes,
+            datasets: [{
+              label: "Quantidade Vendida",
+              data: vendidos,
+              backgroundColor: "#f44336"
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Produtos Menos Vendidos"
+              }
             }
           }
-        }
-      });
-    }
+        });
+      }
 
 
 
-    async function carregarEstoqueBaixo() {
-      const resposta = await fetch("/api/produtos/relatorios/estoque-baixo");
-      const dados = await resposta.json();
+      async function carregarEstoqueBaixo() {
+        const resposta = await fetch("/api/produtos/relatorios/estoque-baixo");
+        const dados = await resposta.json();
 
-      const div = document.getElementById("estoque-baixo");
+        const div = document.getElementById("estoque-baixo");
 
-      if (dados.length === 0) {
-        div.innerHTML = `
+        if (dados.length === 0) {
+          div.innerHTML = `
       <h2>Produtos com Estoque Baixo</h2>
       <p>Todos os produtos estão com estoque adequado.</p>
     `;
-        return;
-      }
+          return;
+        }
 
-      let html = `
+        let html = `
     <h2>Produtos com Estoque Baixo</h2>
     <table>
       <thead>
@@ -176,8 +172,8 @@
       <tbody>
   `;
 
-      dados.forEach(p => {
-        html += `
+        dados.forEach(p => {
+          html += `
       <tr>
         <td>${p.nome}</td>
         <td>${p.categoria}</td>
@@ -185,85 +181,89 @@
         <td>${p.estoque_minimo}</td>
       </tr>
     `;
-      });
+        });
 
-      html += `</tbody></table>`;
-      div.innerHTML = html;
-    }
+        html += `</tbody></table>`;
+        div.innerHTML = html;
+      }
 
-    async function carregarProdutosVencidos() {
-      const resposta = await fetch("/api/produtos/relatorios/vencidos");
-      const dados = await resposta.json();
+      async function carregarProdutosVencidos() {
+        const resposta = await fetch("/api/produtos/relatorios/vencidos");
+        const dados = await resposta.json();
 
-      const tbody = document.querySelector("#tabelaVencidos tbody");
-      tbody.innerHTML = "";
+        const tbody = document.querySelector("#tabelaVencidos tbody");
+        tbody.innerHTML = "";
 
-      const hoje = new Date();
+        const hoje = new Date();
 
-      dados.forEach(produto => {
-        const validade = new Date(produto.validade);
-        let status = "";
+        dados.forEach(produto => {
+          const validade = new Date(produto.validade);
+          let status = "";
 
-        const diffDias = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
+          const diffDias = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
 
-        if (validade < hoje) {
-          status = "VENCIDO";
-        } else if (diffDias <= 7) {
-          status = "Vence em até 7 dias";
-        } else if (diffDias <= 15) {
-          status = "Vence em até 15 dias";
-        } else {
-          status = "Dentro da validade";
-        }
+          if (validade < hoje) {
+            status = "VENCIDO";
+          } else if (diffDias <= 7) {
+            status = "Vence em até 7 dias";
+          } else if (diffDias <= 15) {
+            status = "Vence em até 15 dias";
+          } else {
+            status = "Dentro da validade";
+          }
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
       <td>${produto.nome}</td>
       <td>${produto.categoria}</td>
       <td>${produto.validade}</td>
       <td>${status}</td>
     `;
 
-        tbody.appendChild(tr);
-      });
+          tbody.appendChild(tr);
+        });
+      }
+
+     
+
+
+
+
+
+
+
+      function openTab(tabId, event) {
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        document.querySelectorAll(".tab-button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document.getElementById(tabId).classList.add("active");
+        event.target.classList.add("active");
+
+        if (tabId === "mais-vendidos") {
+          carregarMaisVendidos();
+        } else if (tabId === "menos-vendidos") {
+          carregarMenosVendidos();
+        }
+        else if (tabId === "estoque-baixo") {
+          carregarEstoqueBaixo();
+        }
+        else if (tabId === "vencidos") {
+          carregarProdutosVencidos();
+   
+
+      }
     }
 
 
 
 
-
-
-
-    function openTab(tabId, event) {
-      document.querySelectorAll(".tab-content").forEach((tab) => {
-        tab.classList.remove("active");
-      });
-      document.querySelectorAll(".tab-button").forEach((btn) => {
-        btn.classList.remove("active");
-      });
-      document.getElementById(tabId).classList.add("active");
-      event.target.classList.add("active");
-
-      if (tabId === "mais-vendidos") {
+      window.addEventListener("DOMContentLoaded", () => {
         carregarMaisVendidos();
-      } else if (tabId === "menos-vendidos") {
-        carregarMenosVendidos();
-      }
-      else if (tabId === "estoque-baixo") {
-        carregarEstoqueBaixo();
-      }
-      else if (tabId === "vencidos") {
-        carregarProdutosVencidos();
-      }
-    }
-
-
-
-
-    window.addEventListener("DOMContentLoaded", () => {
-      carregarMaisVendidos();
-    });
-  </script>
+      });
+    </script>
 
 
 

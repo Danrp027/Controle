@@ -1,13 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Vendas - Painel Principal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fffaf0;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #f4b400;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      color: #4e342e;
+    }
+
+    .logo span {
+      margin-left: 10px;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #333;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: background 0.3s;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background-color: #ffe082;
+    }
+
+    .content {
+      flex: 1;
+      padding: 40px;
+    }
+
+    .content h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    .welcome-box {
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .welcome-box p {
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-    <a href="cadastro.html"> cadastro</a>
-      <a href="lista.html"> lista</a>
-      <a href="relatorio.html"> relatorio</a>
+  <div class="container">
+    <!-- Menu lateral -->
+    <div class="sidebar">
+      <div class="logo">
+        🧀 <span>QUEIJARIA CHIABAI</span>
+      </div>
+      <a href="index.html">🏠 Dashboard</a>
+      <a href="cadastro.html">📥 Cadastro</a>
+      <a href="lista.html">📋 Lista</a>
+      <a href="relatorio.html">📊 Relatórios</a>
+      <a href="clientes.html">🧑‍🤝‍🧑 Clientes</a>
+      <a href="pedidos.html">🧾 Pedidos</a>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div class="content">
+      <h1>Bem-vindo ao Sistema da Queijaria Chiabai!</h1>
+      <div class="welcome-box">
+        <p>Use o menu lateral para acessar o cadastro de produtos, listar os itens, visualizar relatórios de vendas e movimentações, além de gerenciar clientes e pedidos.</p>
+        <p>Este painel inicial pode ser usado para gráficos resumidos, últimas atividades ou notificações importantes no futuro.</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

@@ -237,44 +237,6 @@ const sql = `
     }
   });
 });
- 
-
-
-router.get("/relatorios/movimentacao", (req, res) => {
-  const sql = `
-    SELECT 
-      m.id,
-      p.nome AS produto,
-      m.tipo,
-      m.quantidade,
-      m.data_movimentacao,
-      m.observacao
-    FROM movimentacoes m
-    JOIN produtos p ON m.produto_id = p.id
-    ORDER BY m.data_movimentacao DESC
-  `;
-
-  db.all(sql, [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ erro: 'Erro ao buscar movimentações de produtos' });
-    } else {
-      res.json(rows);
-    }
-  });
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 module.exports = router;
