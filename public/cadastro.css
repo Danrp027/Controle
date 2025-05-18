@@ -8,7 +8,7 @@ body {
 }
 
 .container {
-  background-color: #ffdc90;
+   background-color: #1e293b;
   padding: 40px;
   border-radius: 12px;
   max-width: 700px;
@@ -19,7 +19,7 @@ body {
 h1 {
   margin-bottom: 30px;
   font-size: 28px;
-  color: #333;
+  color: white;
 }
 
 form {
@@ -41,7 +41,7 @@ label {
   display: block;
   font-weight: 600;
   margin-bottom: 6px;
-  color: #333;
+  color: white;
 }
 
 input,
@@ -52,6 +52,7 @@ select {
   border-radius: 6px;
   box-sizing: border-box;
   background-color: #fff;
+  font-size: 20px;
 }
 
 .image-upload label {
@@ -74,7 +75,7 @@ select {
 button {
   margin-top: 30px;
   padding: 14px;
-  background-color: #f7944d;
+  background-color: darkgreen;
   color: white;
   border: none;
   border-radius: 8px;
@@ -84,5 +85,5 @@ button {
 }
 
 button:hover {
-  background-color: #e67d2d;
+  background-color: green;
 }
