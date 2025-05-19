@@ -3,91 +3,63 @@ const router = express.Router();
 const db = require('../models/db');
 const path = require('path');
 
-router.post('/estoque', (req, res) => {
-  const { produto_id, tipo, quantidade, data, motivo } = req.body;
 
-  const query = `
-    INSERT INTO estoque (produto_id, tipo, quantidade, data, motivo)
-    VALUES (?, ?, ?, ?, ?)
-  `;
 
-  db.run(query, [produto_id, tipo, quantidade, data, motivo], function(err) {
-    if (err) {
-      console.error('Erro ao registrar movimentação:', err);
-      return res.status(500).json({ erro: 'Erro ao registrar movimentação' });
-    }
-    res.status(201).json({ id: this.lastID });
-  });
+
+
+
+// GET /estoque/atual
+router.get('/estoque/atual', async (req, res) => {
+  try {
+    const produtos = await db.all(`
+      SELECT id, nome, quantidade_estoque, estoque_minimo,
+        CASE WHEN quantidade_estoque <= estoque_minimo THEN 1 ELSE 0 END AS alerta
+      FROM produtos
+    `);
+    res.json(produtos);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar estoque atual.' });
+  }
 });
 
 
-router.get('/estoque', (req, res) => {
-  const query = `
-    SELECT estoque.*, produtos.nome AS produto_nome 
-    FROM estoque 
-    JOIN produtos ON estoque.produto_id = produtos.id
-    ORDER BY data DESC
-  `;
+router.post('/estoque/movimentar', async (req, res) => {
+  const { produto_id, tipo, quantidade, motivo } = req.body;
 
-  db.all(query, [], (err, rows) => {
-    if (err) {
-      console.error('Erro ao listar movimentações:', err);
-      return res.status(500).json({ erro: 'Erro ao listar movimentações' });
-    }
-    res.json(rows);
-  });
+  if (!produto_id || !tipo || !quantidade) {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes' });
+  }
+
+  try {
+    const data = new Date().toISOString().split('T')[0]; // data no formato YYYY-MM-DD
+
+    await db.run(`
+      INSERT INTO estoque (produto_id, tipo, quantidade, data, motivo)
+      VALUES (?, ?, ?, ?, ?)
+    `, [produto_id, tipo, quantidade, data, motivo]);
+
+    res.json({ success: true, message: 'Movimentação registrada com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao registrar movimentação' });
+  }
 });
 
-router.get('/api/produtos/pesquisar', (req, res) => {
-  const termo = req.query.nome || '';
-  const query = `SELECT id, nome FROM produtos WHERE nome LIKE ? LIMIT 10`;
-  db.all(query, [`%${termo}%`], (err, rows) => {
-    if (err) return res.status(500).json({ erro: 'Erro ao buscar produtos' });
-    res.json(rows);
-  });
-});
+router.get('/estoque/historico', async (req, res) => {
+  try {
+    const historico = await db.all(`
+      SELECT e.*, p.nome AS nome_produto 
+      FROM estoque e 
+      JOIN produtos p ON p.id = e.produto_id
+      ORDER BY e.data DESC
+    `);
 
-router.get('/api/produtos/buscar', (req, res) => {
-  const termo = `%${req.query.nome}%`;
-  const query = `SELECT id, nome FROM produtos WHERE nome LIKE ? LIMIT 10`;
-
-  db.all(query, [termo], (err, rows) => {
-    if (err) {
-      console.error('Erro ao buscar produtos:', err);
-      return res.status(500).json({ erro: 'Erro ao buscar produtos' });
-    }
-    res.json(rows);
-  });
+    res.json(historico);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar histórico' });
+  }
 });
 
 
-router.post('/api/estoque', (req, res) => {
-  const { produto_id, tipo, quantidade, data, motivo } = req.body;
-  const query = `INSERT INTO estoque (produto_id, tipo, quantidade, data, motivo) VALUES (?, ?, ?, ?, ?)`;
-  db.run(query, [produto_id, tipo, quantidade, data, motivo], function(err) {
-    if (err) return res.status(500).json({ erro: 'Erro ao registrar movimentação' });
-    res.send('Movimentação registrada');
-  });
-});
-
-// Exemplo: GET /api/produtos/buscar?nome=queijo
-router.get('/api/produtos/buscar', (req, res) => {
-  const termo = `%${req.query.nome}%`;
-  const query = `
-    SELECT id, nome 
-    FROM produtos 
-    WHERE nome LIKE ?
-    ORDER BY nome
-    LIMIT 10
-  `;
-  db.all(query, [termo], (err, rows) => {
-    if (err) {
-      console.error("Erro ao buscar produtos:", err);
-      return res.status(500).json({ erro: "Erro ao buscar produtos" });
-    }
-    res.json(rows);
-  });
-});
 
 
 

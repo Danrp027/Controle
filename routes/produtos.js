@@ -238,27 +238,26 @@ const sql = `
   });
 });
 
-// Rota de busca por nome para autocomplete
-router.get('/buscar', (req, res) => {
-  const nome = `%${req.query.nome}%`;
 
-  const query = `
-    SELECT id, nome
-    FROM produtos
-    WHERE nome LIKE ?
-    ORDER BY nome ASC
-    LIMIT 10
-  `;
+router.get('/produtos', async (req, res) => {
+  const search = req.query.q;
 
-  db.all(query, [nome], (err, rows) => {
-    if (err) {
-      console.error("Erro ao buscar produtos por nome:", err);
-      return res.status(500).json({ erro: 'Erro ao buscar produtos' });
+  try {
+    if (!search) {
+      return res.status(400).json({ error: 'Parâmetro de busca ausente' });
     }
 
-    res.json(rows);
-  });
+    const results = await db.all(`
+      SELECT id, nome FROM produtos 
+      WHERE nome LIKE ? OR id = ?
+    `, [`%${search}%`, search]);
+
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar produtos' });
+  }
 });
+
 
 
 

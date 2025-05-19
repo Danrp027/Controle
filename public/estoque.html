@@ -1,210 +1,131 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Controle de Estoque</title>
-  <link rel="stylesheet" href="estoque.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h1, h2 {
-      text-align: center;
-      color: #333;
-    }
-
-    form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    form input, form select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      width: 100%;
-    }
-
-    form button {
-      grid-column: span 2;
-      padding: 12px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-    }
-
-    th {
-      background-color: #f0f0f0;
-    }
-
-    /* Autocomplete */
-    .autocomplete-box {
-      position: absolute;
-      background: white;
-      border: 1px solid #ccc;
-      z-index: 10;
-      max-height: 150px;
-      overflow-y: auto;
-      width: calc(100% - 22px);
-    }
-
-    .suggestion {
-      padding: 8px;
-      cursor: pointer;
-    }
-
-    .suggestion:hover {
-      background: #eee;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Movimentação de Estoque</h1>
-    <form id="form-estoque" autocomplete="off">
-      <div style="position: relative; grid-column: span 2;">
-        <input type="text" id="produto_nome" placeholder="Digite o nome do produto" />
-        <input type="hidden" id="produto_id" />
-        <div id="sugestoes" class="autocomplete-box"></div>
-      </div>
-
-      <select id="tipo" required>
-        <option value="entrada">Entrada</option>
-        <option value="saída">Saída</option>
-      </select>
-
-      <input type="number" step="0.01" id="quantidade" placeholder="Quantidade" required>
-      <input type="date" id="data" required>
-      <input type="text" id="motivo" placeholder="Motivo">
-      
-      <button type="submit">Salvar</button>
-    </form>
-
-    <h2>Histórico</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Tipo</th>
-          <th>Quantidade</th>
-          <th>Data</th>
-          <th>Motivo</th>
-        </tr>
-      </thead>
-      <tbody id="historicoEstoque"></tbody>
-    </table>
-  </div>
-
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script>
-    async function carregarHistorico() {
-      const res = await fetch('/api/estoque');
-      const historico = await res.json();
-      const tbody = document.getElementById('historicoEstoque');
+    async function carregarProdutos() {
+  const resposta = await fetch('/produtos?q=');
+  const produtos = await resposta.json();
+  const input = document.getElementById('produto');
+  const datalist = document.getElementById('produtos-list');
+  datalist.innerHTML = '';
+
+  produtos.forEach(p => {
+    const option = document.createElement('option');
+    option.value = `${p.id} - ${p.nome}`;
+    datalist.appendChild(option);
+  });
+}
+
+
+    async function adicionarMovimentacao() {
+      const produtoValor = document.getElementById('produto').value;
+      const produtoId = parseInt(produtoValor.split(' - ')[0]);
+      const tipo = document.getElementById('tipo').value;
+      const quantidade = parseFloat(document.getElementById('quantidade').value);
+      const data = document.getElementById('data').value;
+      const motivo = document.getElementById('motivo').value;
+
+      const resposta = await fetch('/api/estoque/movimentar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ produto_id: produtoId, tipo, quantidade, data, motivo })
+      });
+
+      if (resposta.ok) {
+        alert('Movimentação registrada com sucesso.');
+        listarHistorico();
+      } else {
+        alert('Erro ao registrar movimentação.');
+      }
+    }
+
+    async function listarHistorico() {
+      const resposta = await fetch('/estoque/historico');
+
+
+      const historico = await resposta.json();
+      const tbody = document.getElementById('historico-body');
       tbody.innerHTML = '';
+
       historico.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${item.produto_nome}</td>
-          <td>${item.tipo}</td>
-          <td>${item.quantidade}</td>
-          <td>${item.data}</td>
-          <td>${item.motivo || '-'}</td>
+          <td class="px-4 py-2 border">${item.nome}</td>
+          <td class="px-4 py-2 border">${item.tipo}</td>
+          <td class="px-4 py-2 border">${item.quantidade}</td>
+          <td class="px-4 py-2 border">${item.data}</td>
+          <td class="px-4 py-2 border">${item.motivo}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    const produtoInput = document.getElementById("produto_nome");
-    const sugestoes = document.getElementById("sugestoes");
-
-    produtoInput.addEventListener("input", async () => {
-      const termo = produtoInput.value;
-      if (termo.length < 2) {
-        sugestoes.innerHTML = '';
-        return;
-      }
-
-      const resposta = await fetch(`/api/produtos/buscar?nome=${encodeURIComponent(termo)}`);
-      const produtos = await resposta.json();
-
-      sugestoes.innerHTML = '';
-      produtos.forEach(p => {
-        const div = document.createElement("div");
-        div.textContent = p.nome;
-        div.classList.add("suggestion");
-        div.onclick = () => {
-          produtoInput.value = p.nome;
-          document.getElementById("produto_id").value = p.id;
-          sugestoes.innerHTML = '';
-        };
-        sugestoes.appendChild(div);
-      });
-    });
-
-    document.getElementById('form-estoque').addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const produto_id = document.getElementById('produto_id').value;
-      if (!produto_id) {
-        alert("Por favor, selecione um produto da lista.");
-        return;
-      }
-
-      const dados = {
-        produto_id,
-        tipo: document.getElementById('tipo').value,
-        quantidade: document.getElementById('quantidade').value,
-        data: document.getElementById('data').value,
-        motivo: document.getElementById('motivo').value
-      };
-
-      const resposta = await fetch('/api/estoque', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-      });
-
-      if (resposta.ok) {
-        alert("Movimentação registrada com sucesso!");
-        document.getElementById('form-estoque').reset();
-        document.getElementById('produto_id').value = '';
-        carregarHistorico();
-      } else {
-        alert("Erro ao registrar movimentação.");
-      }
-    });
-
-    carregarHistorico();
+    window.onload = () => {
+      carregarProdutos();
+      listarHistorico();
+    }
   </script>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">Controle de Estoque</h1>
+
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold mb-2">Adicionar Movimentação</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-medium">Produto:</label>
+          <input list="produtos-list" id="produto" class="w-full border rounded px-3 py-2" placeholder="ID ou nome do produto" />
+          <datalist id="produtos-list"></datalist>
+        </div>
+        <div>
+          <label class="block font-medium">Tipo:</label>
+          <select id="tipo" class="w-full border rounded px-3 py-2">
+            <option value="entrada">Entrada</option>
+            <option value="saida">Saída</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-medium">Quantidade:</label>
+          <input type="number" id="quantidade" class="w-full border rounded px-3 py-2" step="0.01" />
+        </div>
+        <div>
+          <label class="block font-medium">Data:</label>
+          <input type="date" id="data" class="w-full border rounded px-3 py-2" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block font-medium">Motivo:</label>
+          <input type="text" id="motivo" class="w-full border rounded px-3 py-2" />
+        </div>
+      </div>
+      <button onclick="adicionarMovimentacao()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded">
+        Adicionar
+      </button>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold mb-2">Histórico de Movimentações</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="px-4 py-2 border">Produto</th>
+              <th class="px-4 py-2 border">Tipo</th>
+              <th class="px-4 py-2 border">Quantidade</th>
+              <th class="px-4 py-2 border">Data</th>
+              <th class="px-4 py-2 border">Motivo</th>
+            </tr>
+          </thead>
+          <tbody id="historico-body">
+            <!-- histórico preenchido por JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
