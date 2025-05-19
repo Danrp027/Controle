@@ -37,7 +37,7 @@
 
     .tab-button.active,
     .tab-button:hover {
-      background-color: #ffb35c;
+      background-color: #1e293b;
       color: #fff;
     }
 
@@ -66,8 +66,9 @@
     }
 
     th {
-      background-color: #ffe4bd;
+     background-color: #1e293b;
       font-weight: bold;
+      color: white;
     }
 
     tr:hover {

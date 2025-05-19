@@ -15,11 +15,15 @@ const produtosRoutes = require('./routes/produtos');
 const pedidosRoutes = require('./routes/pedidos');
 const clientesRoutes = require('./routes/clientes');
 const estoqueRoutes = require('./routes/estoque');
+const relatoriosRoutes = require('./routes/relatorios'); 
+ 
+
 
 app.use('/api/produtos', produtosRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/estoque', estoqueRoutes);
+app.use('/relatorios', relatoriosRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

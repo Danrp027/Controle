@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Clientes</title>
+  <link rel="stylesheet" href="clientes.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Clientes</h1>
+      <button id="novoCliente">+ Novo Cliente</button>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Telefone</th>
+          <th>Endereco</th>
+          <th>Obervação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaClientes"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function carregarClientes() {
+      try {
+        const resposta = await fetch('/api/clientes');
+        const clientes = await resposta.json();
+
+        const tabela = document.getElementById('tabelaClientes');
+        tabela.innerHTML = '';
+
+        clientes.forEach(cliente => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${cliente.nome}</td>
+            <td>${cliente.tipo}</td>
+            <td>${cliente.telefone}</td>
+            <td>${cliente.endereco}</td>
+             <td>${cliente.observacoes}</td>
+            <td>
+              <button onclick="editarCliente(${cliente.id})" class="icon-button" title="Editar">
+                <i data-lucide="pencil"></i>
+              </button>
+              <button onclick="deletarCliente(${cliente.id})" class="icon-button" title="Deletar">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </td>
+          `;
+          tabela.appendChild(tr);
+        });
+
+        lucide.createIcons();
+      } catch (erro) {
+        console.error('Erro ao carregar clientes:', erro);
+      }
+    }
+
+    function editarCliente(id) {
+      window.location.href = `/editar_cliente.html?id=${id}`;
+    }
+
+    async function deletarCliente(id) {
+      if (confirm('Tem certeza que deseja deletar este cliente?')) {
+        try {
+          const resposta = await fetch(`/api/clientes/${id}`, { method: 'DELETE' });
+
+          if (resposta.ok) {
+            alert('Cliente deletado com sucesso!');
+            carregarClientes();
+          } else {
+            alert('Erro ao deletar cliente.');
+          }
+        } catch (erro) {
+          console.error('Erro ao deletar cliente:', erro);
+        }
+      }
+    }
+
+    document.getElementById('novoCliente').addEventListener('click', () => {
+      window.location.href = '/cadastro_cliente.html';
+    });
+
+    carregarClientes();
+  </script>
+</body>
+</html>

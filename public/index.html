@@ -139,12 +139,21 @@
         <a href="relatorio.html">Relatórios</a>
       </div>
 
-      <a class="menu-item" href="clientes.html">
-        <div class="menu-label">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 1.6c-3.2 0-9.6 1.6-9.6 4.8v1.6h19.2V18.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-          Clientes
-        </div>
-      </a>
+      
+
+<div class="menu-item" onclick="toggleSubmenu('clientesSub', this)">
+  <div class="menu-label">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 1.6c-3.2 0-9.6 1.6-9.6 4.8v1.6h19.2V18.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+    Clientes
+  </div>
+  <span class="arrow">▶</span>
+</div>
+<div id="clientesSub" class="submenu">
+  <a href="clientes.html">Lista de Clientes</a>
+  <a href="cadastro_cliente.html">Cadastro de Cliente</a>
+  <a href="dashboard_clientes.html">Dashboard Cliente</a>
+</div>
+
 
       <a class="menu-item" href="pedidos.html">
         <div class="menu-label">

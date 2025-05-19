@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard de Clientes</title>
+  <link rel="stylesheet" href="dashboard_clientes.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard">
+    <h1>Relatórios de Clientes</h1>
+
+    <canvas id="graficoTipo" width="400" height="200"></canvas>
+    <canvas id="graficoBairro" width="400" height="200"></canvas>
+
+    <div class="cards">
+      <div class="card" id="totalClientes">
+        <h2>Total de Clientes</h2>
+        <p>0</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function carregarRelatorios() {
+      // Total de clientes
+      const totalRes = await fetch('/relatorios/clientes/total');
+      const total = await totalRes.json();
+      document.querySelector('#totalClientes p').textContent = total.total;
+
+      // Clientes por tipo (gráfico de pizza)
+      const tipoRes = await fetch('/relatorios/clientes/por-tipo');
+      const tipos = await tipoRes.json();
+      const labelsTipo = tipos.map(t => t.tipo);
+      const dadosTipo = tipos.map(t => t.quantidade);
+
+      new Chart(document.getElementById('graficoTipo'), {
+        type: 'pie',
+        data: {
+          labels: labelsTipo,
+          datasets: [{
+            label: 'Clientes por Tipo',
+            data: dadosTipo,
+            backgroundColor: ['#0074D9', '#FF4136', '#2ECC40', '#FF851B']
+          }]
+        }
+      });
+
+      // Clientes por bairro (gráfico de barras)
+      const bairroRes = await fetch('/relatorios/clientes/por-bairro');
+      const bairros = await bairroRes.json();
+      const labelsBairro = bairros.map(b => b.bairro);
+      const dadosBairro = bairros.map(b => b.quantidade);
+
+      new Chart(document.getElementById('graficoBairro'), {
+        type: 'bar',
+        data: {
+          labels: labelsBairro,
+          datasets: [{
+            label: 'Clientes por Bairro',
+            data: dadosBairro,
+            backgroundColor: '#8884d8'
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    carregarRelatorios();
+  </script>
+</body>
+</html>
