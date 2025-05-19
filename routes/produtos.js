@@ -238,5 +238,28 @@ const sql = `
   });
 });
 
+// Rota de busca por nome para autocomplete
+router.get('/buscar', (req, res) => {
+  const nome = `%${req.query.nome}%`;
+
+  const query = `
+    SELECT id, nome
+    FROM produtos
+    WHERE nome LIKE ?
+    ORDER BY nome ASC
+    LIMIT 10
+  `;
+
+  db.all(query, [nome], (err, rows) => {
+    if (err) {
+      console.error("Erro ao buscar produtos por nome:", err);
+      return res.status(500).json({ erro: 'Erro ao buscar produtos' });
+    }
+
+    res.json(rows);
+  });
+});
+
+
 
 module.exports = router;
