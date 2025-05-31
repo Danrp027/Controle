@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Montagem de Pedido</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md mt-10">
+    <h1 class="text-2xl font-semibold mb-6 text-center">Montagem de Pedido</h1>
+
+    <form id="pedidoForm" class="space-y-6">
+      <!-- Cliente -->
+      <div>
+        <label for="cliente" class="block font-medium">Cliente</label>
+        <input type="text" id="cliente" class="w-full mt-1 p-2 border border-gray-300 rounded" placeholder="Digite o nome do cliente" autocomplete="off" />
+        <input type="hidden" id="cliente_id" />
+        <ul id="sugestoes-clientes" class="bg-white border border-gray-300 rounded mt-1 max-h-40 overflow-y-auto"></ul>
+        <small><a href="#" onclick="usarAvulso()" class="text-blue-600">Usar Cliente Avulso</a></small>
+      </div>
+
+      <!-- Produto + quantidade -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block font-medium">Produto</label>
+          <input type="text" id="produto" class="w-full mt-1 p-2 border border-gray-300 rounded" placeholder="Produto" />
+          <input type="hidden" id="produto_id" />
+          <ul id="sugestoes-produtos" class="bg-white border border-gray-300 rounded mt-1 max-h-40 overflow-y-auto"></ul>
+        </div>
+        <div>
+          <label class="block font-medium">Quantidade</label>
+          <input type="number" id="quantidade" class="w-full mt-1 p-2 border border-gray-300 rounded" step="0.01" min="1" />
+        </div>
+        <div class="flex items-end">
+          <button type="button" onclick="adicionarProduto()" class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700 transition">Adicionar</button>
+        </div>
+      </div>
+
+      <!-- Itens do pedido -->
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Itens do Pedido</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto text-sm border">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="p-2">Produto</th>
+                <th class="p-2">Qtd</th>
+                <th class="p-2">Unitário</th>
+                <th class="p-2">Total</th>
+                <th class="p-2">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaItens"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="text-right text-lg">
+        <strong>Total: R$ <span id="totalPedido">0.00</span></strong>
+      </div>
+
+      <!-- Pagamento + Data + Observações -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="pago" class="block font-medium">Pagamento</label>
+          <select id="pago" class="w-full mt-1 p-2 border border-gray-300 rounded">
+            <option value="1">Pago</option>
+            <option value="0">Fiado</option>
+          </select>
+        </div>
+        <div>
+          <label for="data" class="block font-medium">Data</label>
+          <input type="date" id="data" class="w-full mt-1 p-2 border border-gray-300 rounded" />
+        </div>
+        <div>
+          <label for="obs" class="block font-medium">Observações</label>
+          <textarea id="obs" rows="2" class="w-full mt-1 p-2 border border-gray-300 rounded"></textarea>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">
+          Finalizar Pedido
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script src="pedidos.js"></script>
+</body>
+</html>

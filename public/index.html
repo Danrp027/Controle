@@ -19,7 +19,7 @@
 
     .container {
       display: flex;
-      height: 100vh;
+      min-height: 100vh;
     }
 
     .sidebar {
@@ -72,6 +72,7 @@
       margin-left: 10px;
       padding-left: 10px;
       border-left: 2px solid #475569;
+      margin-bottom: 10px;
     }
 
     .submenu a {
@@ -115,6 +116,15 @@
       display: flex;
       align-items: center;
     }
+
+    a.menu-item {
+      text-decoration: none;
+      color: #f8fafc;
+    }
+
+    a.menu-item:hover {
+      background-color: #334155;
+    }
   </style>
 </head>
 <body>
@@ -139,21 +149,18 @@
         <a href="relatorio.html">Relatórios</a>
       </div>
 
-      
-
-<div class="menu-item" onclick="toggleSubmenu('clientesSub', this)">
-  <div class="menu-label">
-    <svg class="icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 1.6c-3.2 0-9.6 1.6-9.6 4.8v1.6h19.2V18.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-    Clientes
-  </div>
-  <span class="arrow">▶</span>
-</div>
-<div id="clientesSub" class="submenu">
-  <a href="clientes.html">Lista de Clientes</a>
-  <a href="cadastro_cliente.html">Cadastro de Cliente</a>
-  <a href="dashboard_clientes.html">Dashboard Cliente</a>
-</div>
-
+      <div class="menu-item" onclick="toggleSubmenu('clientesSub', this)">
+        <div class="menu-label">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 1.6c-3.2 0-9.6 1.6-9.6 4.8v1.6h19.2V18.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          Clientes
+        </div>
+        <span class="arrow">▶</span>
+      </div>
+      <div id="clientesSub" class="submenu">
+        <a href="clientes.html">Lista de Clientes</a>
+        <a href="cadastro_cliente.html">Cadastro de Cliente</a>
+        <a href="dashboard_clientes.html">Dashboard Cliente</a>
+      </div>
 
       <a class="menu-item" href="pedidos.html">
         <div class="menu-label">
@@ -161,13 +168,13 @@
           Pedidos
         </div>
       </a>
-    </div>
 
-    
+      
+
       <a class="menu-item" href="estoque.html">
         <div class="menu-label">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v2H4V4zm0 4h10v2H4V8zm0 4h16v2H4v-2zm0 4h10v2H4v-2z"/></svg>
-          estoque
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h18v2H3V3zm0 4h12v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2z"/></svg>
+          Estoque
         </div>
       </a>
     </div>
@@ -177,7 +184,7 @@
       <h1>Bem-vindo à Queijaria Chiabai</h1>
       <div class="welcome-box">
         <p>Escolha uma opção no menu para começar.</p>
-        <p>Aqui poderá ver seus pedidos, gerenciar clientes e controlar o estoque de produtos.</p>
+        <p>Aqui você pode gerenciar produtos, clientes, pedidos e controlar seu estoque.</p>
       </div>
     </div>
   </div>

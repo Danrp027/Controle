@@ -1,25 +1,118 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Controle de Estoque</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Controle de Estoque</h1>
+
+    <!-- Navegação entre abas -->
+    <div class="space-x-4 mb-6">
+      <button onclick="abrirAba('movimentacao')" class="bg-blue-600 text-white px-4 py-2 rounded">Movimentação</button>
+      <button onclick="abrirAba('relatorioEstoque')" class="bg-green-600 text-white px-4 py-2 rounded">Relatório Atual</button>
+      <button onclick="abrirAba('alertasEstoque')" class="bg-red-600 text-white px-4 py-2 rounded">Alertas de Baixo Estoque</button>
+    </div>
+
+    <!-- Aba de movimentação -->
+    <div id="movimentacao" class="aba">
+      <h2 class="text-xl font-semibold mb-4">Adicionar Movimentação</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label>Produto:</label>
+          <input list="lista-produtos" id="produto" class="w-full border rounded px-3 py-2" placeholder="ID ou nome" />
+          <datalist id="lista-produtos"></datalist>
+        </div>
+        <div>
+          <label>Tipo:</label>
+          <select id="tipo" class="w-full border rounded px-3 py-2">
+            <option value="entrada">Entrada</option>
+            <option value="saida">Saída</option>
+          </select>
+        </div>
+        <div>
+          <label>Quantidade:</label>
+          <input type="number" id="quantidade" class="w-full border rounded px-3 py-2" step="0.01">
+        </div>
+        <div>
+          <label>Data:</label>
+          <input type="date" id="data" class="w-full border rounded px-3 py-2">
+        </div>
+        <div class="md:col-span-2">
+          <label>Motivo:</label>
+          <input type="text" id="motivo" class="w-full border rounded px-3 py-2">
+        </div>
+      </div>
+      <button onclick="adicionarMovimentacao()" class="mt-4 bg-blue-700 text-white px-4 py-2 rounded">Adicionar</button>
+
+      <h2 class="text-xl font-semibold mt-8 mb-2">Histórico</h2>
+      <table class="w-full border mt-2">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="px-2 py-1">Produto</th>
+            <th class="px-2 py-1">Tipo</th>
+            <th class="px-2 py-1">Quantidade</th>
+            <th class="px-2 py-1">Data</th>
+            <th class="px-2 py-1">Motivo</th>
+          </tr>
+        </thead>
+        <tbody id="historico-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Aba de relatório -->
+    <div id="relatorioEstoque" class="aba hidden">
+      <h2 class="text-xl font-semibold mb-2">Relatório de Estoque Atual</h2>
+      <table class="w-full border">
+        <thead class="bg-green-100">
+          <tr>
+            <th class="px-2 py-1">Produto</th>
+            <th class="px-2 py-1">Categoria</th>
+            <th class="px-2 py-1">Quantidade</th>
+            <th class="px-2 py-1">Estoque Mínimo</th>
+          </tr>
+        </thead>
+        <tbody id="estoque-atual-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Aba de alertas -->
+    <div id="alertasEstoque" class="aba hidden">
+      <h2 class="text-xl font-semibold mb-2">Produtos com Estoque Baixo</h2>
+      <table class="w-full border">
+        <thead class="bg-red-100">
+          <tr>
+            <th class="px-2 py-1">Produto</th>
+            <th class="px-2 py-1">Categoria</th>
+            <th class="px-2 py-1">Qtd</th>
+            <th class="px-2 py-1">Mínimo</th>
+          </tr>
+        </thead>
+        <tbody id="estoque-alerta-body"></tbody>
+      </table>
+    </div>
+  </div>
+
   <script>
+    function abrirAba(id) {
+      document.querySelectorAll('.aba').forEach(div => div.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
     async function carregarProdutos() {
-  const resposta = await fetch('/produtos?q=');
-  const produtos = await resposta.json();
-  const input = document.getElementById('produto');
-  const datalist = document.getElementById('produtos-list');
-  datalist.innerHTML = '';
-
-  produtos.forEach(p => {
-    const option = document.createElement('option');
-    option.value = `${p.id} - ${p.nome}`;
-    datalist.appendChild(option);
-  });
-}
-
+      const res = await fetch('/api/estoque/produtos');
+      const produtos = await res.json();
+      const lista = document.getElementById('lista-produtos');
+      lista.innerHTML = '';
+      produtos.forEach(p => {
+        const op = document.createElement('option');
+        op.value = `${p.id} - ${p.nome}`;
+        lista.appendChild(op);
+      });
+    }
 
     async function adicionarMovimentacao() {
       const produtoValor = document.getElementById('produto').value;
@@ -29,37 +122,52 @@
       const data = document.getElementById('data').value;
       const motivo = document.getElementById('motivo').value;
 
-      const resposta = await fetch('/api/estoque/movimentar', {
+      const res = await fetch('/api/estoque/movimentar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ produto_id: produtoId, tipo, quantidade, data, motivo })
       });
 
-      if (resposta.ok) {
-        alert('Movimentação registrada com sucesso.');
+      if (res.ok) {
+        alert('Movimentação adicionada');
         listarHistorico();
       } else {
-        alert('Erro ao registrar movimentação.');
+        alert('Erro ao adicionar');
       }
     }
 
     async function listarHistorico() {
-      const resposta = await fetch('/estoque/historico');
-
-
-      const historico = await resposta.json();
+      const res = await fetch('/api/estoque/historico');
+      const historico = await res.json();
       const tbody = document.getElementById('historico-body');
       tbody.innerHTML = '';
-
-      historico.forEach(item => {
+      historico.forEach(h => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="px-4 py-2 border">${item.nome}</td>
-          <td class="px-4 py-2 border">${item.tipo}</td>
-          <td class="px-4 py-2 border">${item.quantidade}</td>
-          <td class="px-4 py-2 border">${item.data}</td>
-          <td class="px-4 py-2 border">${item.motivo}</td>
-        `;
+        tr.innerHTML = `<td class="border px-2">${h.nome}</td><td class="border px-2">${h.tipo}</td><td class="border px-2">${h.quantidade}</td><td class="border px-2">${h.data}</td><td class="border px-2">${h.motivo}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function listarEstoqueAtual() {
+      const res = await fetch('/api/estoque/atual');
+      const dados = await res.json();
+      const tbody = document.getElementById('estoque-atual-body');
+      tbody.innerHTML = '';
+      dados.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="border px-2">${p.nome}</td><td class="border px-2">${p.categoria}</td><td class="border px-2">${p.quantidade}</td><td class="border px-2">${p.estoque_minimo}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function listarAlertasEstoque() {
+      const res = await fetch('/api/estoque/baixo');
+      const dados = await res.json();
+      const tbody = document.getElementById('estoque-alerta-body');
+      tbody.innerHTML = '';
+      dados.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="border px-2">${p.nome}</td><td class="border px-2">${p.categoria}</td><td class="border px-2">${p.quantidade}</td><td class="border px-2">${p.estoque_minimo}</td>`;
         tbody.appendChild(tr);
       });
     }
@@ -67,65 +175,9 @@
     window.onload = () => {
       carregarProdutos();
       listarHistorico();
+      listarEstoqueAtual();
+      listarAlertasEstoque();
     }
   </script>
-</head>
-<body class="bg-gray-100 p-8">
-  <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-    <h1 class="text-2xl font-bold mb-4">Controle de Estoque</h1>
-
-    <div class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Adicionar Movimentação</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block font-medium">Produto:</label>
-          <input list="produtos-list" id="produto" class="w-full border rounded px-3 py-2" placeholder="ID ou nome do produto" />
-          <datalist id="produtos-list"></datalist>
-        </div>
-        <div>
-          <label class="block font-medium">Tipo:</label>
-          <select id="tipo" class="w-full border rounded px-3 py-2">
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-medium">Quantidade:</label>
-          <input type="number" id="quantidade" class="w-full border rounded px-3 py-2" step="0.01" />
-        </div>
-        <div>
-          <label class="block font-medium">Data:</label>
-          <input type="date" id="data" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="md:col-span-2">
-          <label class="block font-medium">Motivo:</label>
-          <input type="text" id="motivo" class="w-full border rounded px-3 py-2" />
-        </div>
-      </div>
-      <button onclick="adicionarMovimentacao()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded">
-        Adicionar
-      </button>
-    </div>
-
-    <div>
-      <h2 class="text-xl font-semibold mb-2">Histórico de Movimentações</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-gray-200">
-              <th class="px-4 py-2 border">Produto</th>
-              <th class="px-4 py-2 border">Tipo</th>
-              <th class="px-4 py-2 border">Quantidade</th>
-              <th class="px-4 py-2 border">Data</th>
-              <th class="px-4 py-2 border">Motivo</th>
-            </tr>
-          </thead>
-          <tbody id="historico-body">
-            <!-- histórico preenchido por JS -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </body>
 </html>

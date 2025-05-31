@@ -118,6 +118,8 @@ CREATE TABLE IF NOT EXISTS movimentacoes (
     )
   `);
 
+
+
   // Controle de fiado
   db.run(`
     CREATE TABLE IF NOT EXISTS fiados (

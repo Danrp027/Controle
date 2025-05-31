@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Estoque - Movimentação</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-4xl mx-auto bg-white rounded shadow p-6">
+    <h1 class="text-2xl font-bold mb-4">Movimentação de Estoque</h1>
+    
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="produto" class="block font-medium">Produto</label>
+        <input list="produtos" id="produto" class="w-full border px-3 py-2 rounded" placeholder="Digite o nome ou ID do produto">
+        <datalist id="produtos"></datalist>
+      </div>
+      <div>
+        <label for="tipo" class="block font-medium">Tipo</label>
+        <select id="tipo" class="w-full border px-3 py-2 rounded">
+          <option value="entrada">Entrada</option>
+          <option value="saida">Saída</option>
+        </select>
+      </div>
+      <div>
+        <label for="quantidade" class="block font-medium">Quantidade</label>
+        <input type="number" id="quantidade" class="w-full border px-3 py-2 rounded">
+      </div>
+      <div>
+        <label for="data" class="block font-medium">Data</label>
+        <input type="date" id="data" class="w-full border px-3 py-2 rounded">
+      </div>
+      <div class="md:col-span-2">
+        <label for="motivo" class="block font-medium">Motivo</label>
+        <input type="text" id="motivo" class="w-full border px-3 py-2 rounded">
+      </div>
+    </div>
+    
+
+    <button onclick="registrarMovimentacao()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      Registrar Movimentação
+    </button>
+  </div>
+
+ 
+
+  <script>
+    async function carregarProdutos() {
+      const res = await fetch('/api/estoque/produtos');
+      const produtos = await res.json();
+      const lista = document.getElementById('produtos');
+      lista.innerHTML = '';
+      produtos.forEach(p => {
+        const option = document.createElement('option');
+        option.value = `${p.id} - ${p.nome}`;
+        lista.appendChild(option);
+      });
+    }
+
+    async function registrarMovimentacao() {
+      const produtoInput = document.getElementById('produto').value;
+      const produtoId = parseInt(produtoInput.split(' - ')[0]);
+      const tipo = document.getElementById('tipo').value;
+      const quantidade = parseFloat(document.getElementById('quantidade').value);
+      const data = document.getElementById('data').value;
+      const motivo = document.getElementById('motivo').value;
+
+      const resposta = await fetch('/api/estoque/movimentar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ produto_id: produtoId, tipo, quantidade, data, motivo })
+      });
+
+      if (resposta.ok) {
+        alert('Movimentação registrada com sucesso.');
+        document.getElementById('produto').value = '';
+        document.getElementById('tipo').value = 'entrada';
+        document.getElementById('quantidade').value = '';
+        document.getElementById('data').value = '';
+        document.getElementById('motivo').value = '';
+      } else {
+        alert('Erro ao registrar movimentação.');
+      }
+    }
+
+    window.onload = carregarProdutos;
+  </script>
+</body>
+</html>

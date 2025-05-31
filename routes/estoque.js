@@ -1,67 +1,117 @@
+// arquivo: routes/estoque.js
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const path = require('path');
 
-
-
-
-
-
-// GET /estoque/atual
-router.get('/estoque/atual', async (req, res) => {
-  try {
-    const produtos = await db.all(`
-      SELECT id, nome, quantidade_estoque, estoque_minimo,
-        CASE WHEN quantidade_estoque <= estoque_minimo THEN 1 ELSE 0 END AS alerta
-      FROM produtos
-    `);
-    res.json(produtos);
-  } catch (err) {
-    res.status(500).json({ error: 'Erro ao buscar estoque atual.' });
-  }
+// 1. GET /api/estoque/produtos - Lista de produtos para <datalist>
+router.get('/produtos', (req, res) => {
+  const sql = 'SELECT id, nome FROM produtos';
+  db.all(sql, [], (err, rows) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao buscar produtos' });
+    res.json(rows);
+  });
 });
 
-
-router.post('/estoque/movimentar', async (req, res) => {
-  const { produto_id, tipo, quantidade, motivo } = req.body;
+// 2. POST /api/estoque/movimentar - Inserir movimentação
+router.post('/movimentar', (req, res) => {
+  const { produto_id, tipo, quantidade, data, motivo } = req.body;
 
   if (!produto_id || !tipo || !quantidade) {
-    return res.status(400).json({ error: 'Campos obrigatórios ausentes' });
+    return res.status(400).json({ erro: 'Campos obrigatórios ausentes' });
   }
 
-  try {
-    const data = new Date().toISOString().split('T')[0]; // data no formato YYYY-MM-DD
+  // Insere a movimentação no histórico
+  const insertQuery = `
+    INSERT INTO estoque (produto_id, tipo, quantidade, data, motivo)
+    VALUES (?, ?, ?, ?, ?)
+  `;
 
-    await db.run(`
-      INSERT INTO estoque (produto_id, tipo, quantidade, data, motivo)
-      VALUES (?, ?, ?, ?, ?)
-    `, [produto_id, tipo, quantidade, data, motivo]);
+  db.run(insertQuery, [produto_id, tipo, quantidade, data || new Date().toISOString(), motivo || ''], function(err) {
+    if (err) {
+      console.error('Erro ao inserir movimentação:', err);
+      return res.status(500).json({ erro: 'Erro ao registrar movimentação' });
+    }
 
-    res.json({ success: true, message: 'Movimentação registrada com sucesso' });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao registrar movimentação' });
-  }
+    // Atualiza o estoque do produto
+    const operacao = tipo === 'entrada' ? '+' : '-';
+
+    const updateQuery = `
+      UPDATE produtos 
+      SET quantidade = quantidade ${operacao} ? 
+      WHERE id = ?
+    `;
+
+    db.run(updateQuery, [quantidade, produto_id], function(err) {
+      if (err) {
+        console.error('Erro ao atualizar estoque:', err);
+        return res.status(500).json({ erro: 'Movimentação registrada, mas erro ao atualizar estoque' });
+      }
+
+      res.json({ mensagem: 'Movimentação registrada e estoque atualizado com sucesso!' });
+    });
+  });
 });
 
-router.get('/estoque/historico', async (req, res) => {
-  try {
-    const historico = await db.all(`
-      SELECT e.*, p.nome AS nome_produto 
-      FROM estoque e 
-      JOIN produtos p ON p.id = e.produto_id
-      ORDER BY e.data DESC
-    `);
 
-    res.json(historico);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar histórico' });
-  }
+// 3. GET /api/estoque/historico - Listar movimentações
+router.get('/historico', (req, res) => {
+  const sql = `
+    SELECT p.nome, e.tipo, e.quantidade, e.data, e.motivo
+    FROM estoque e
+    JOIN produtos p ON e.produto_id = p.id
+    ORDER BY e.data DESC
+  `;
+  db.all(sql, [], (err, rows) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao buscar histórico' });
+    res.json(rows);
+  });
 });
 
+// 4. GET /api/estoque/baixo - Produtos com estoque abaixo do mínimo
+router.get('/baixo', (req, res) => {
+  const sql = `
+    SELECT nome, quantidade, estoque_minimo
+    FROM produtos
+    WHERE quantidade < estoque_minimo
+  `;
+  db.all(sql, [], (err, rows) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao buscar produtos com estoque baixo' });
+    res.json(rows);
+  });
+});
 
+// 5. GET /api/estoque/atual - Relatório de estoque atual
+router.get('/atual', (req, res) => {
+  const sql = `
+    SELECT nome, categoria, unidade, quantidade, estoque_minimo
+    FROM produtos
+  `;
+  db.all(sql, [], (err, rows) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao buscar estoque atual' });
+    res.json(rows);
+  });
+});
 
+router.get("/atual", (req, res) => {
+  const query = `
+    SELECT 
+      p.nome, 
+      p.categoria, 
+      p.quantidade AS quantidade_atual, 
+      p.estoque_minimo
+    FROM produtos p
+    ORDER BY p.nome
+  `;
 
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error("Erro ao buscar relatório de estoque:", err);
+      return res.status(500).json({ erro: "Erro ao gerar relatório de estoque" });
+    }
+    res.json(rows);
+  });
+});
 
 
 module.exports = router;
+ 
