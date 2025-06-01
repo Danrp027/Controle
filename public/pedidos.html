@@ -24,7 +24,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block font-medium">Produto</label>
-          <input type="text" id="produto" class="w-full mt-1 p-2 border border-gray-300 rounded" placeholder="Produto" />
+          <input type="text" id="produto" class="w-full mt-1 p-2 border border-gray-300 rounded" placeholder="Produto" autocomplete="off" />
           <input type="hidden" id="produto_id" />
           <ul id="sugestoes-produtos" class="bg-white border border-gray-300 rounded mt-1 max-h-40 overflow-y-auto"></ul>
         </div>
@@ -88,6 +88,175 @@
     </form>
   </div>
 
-  <script src="pedidos.js"></script>
+  <script>
+    let itensPedido = [];
+
+    // Autocomplete de clientes
+    document.getElementById("cliente").addEventListener("input", async function() {
+      const termo = this.value;
+      const ul = document.getElementById("sugestoes-clientes");
+      ul.innerHTML = "";
+
+      if (termo.length < 2) return;
+
+      const res = await fetch(`/clientes/buscar?nome=${encodeURIComponent(termo)}`);
+      const clientes = await res.json();
+
+      clientes.forEach(cliente => {
+        const li = document.createElement("li");
+        li.textContent = cliente.nome;
+        li.className = "p-2 hover:bg-gray-100 cursor-pointer";
+        li.onclick = () => {
+          document.getElementById("cliente").value = cliente.nome;
+          document.getElementById("cliente_id").value = cliente.id;
+          ul.innerHTML = "";
+        };
+        ul.appendChild(li);
+      });
+    });
+
+    function usarAvulso() {
+      document.getElementById("cliente").value = "Cliente Avulso";
+      document.getElementById("cliente_id").value = "";
+      document.getElementById("sugestoes-clientes").innerHTML = "";
+    }
+
+    // Autocomplete de produtos
+    document.getElementById("produto").addEventListener("input", async function() {
+      const termo = this.value;
+      const ul = document.getElementById("sugestoes-produtos");
+      ul.innerHTML = "";
+
+      if (termo.length < 2) return;
+
+      const res = await fetch(`/produtos/buscar?nome=${encodeURIComponent(termo)}`);
+      const produtos = await res.json();
+
+      produtos.forEach(produto => {
+        const li = document.createElement("li");
+        li.textContent = `${produto.nome} - R$ ${produto.preco_venda.toFixed(2)}`;
+        li.className = "p-2 hover:bg-gray-100 cursor-pointer";
+        li.onclick = () => {
+          document.getElementById("produto").value = produto.nome;
+          document.getElementById("produto_id").value = produto.id;
+          document.getElementById("produto").dataset.preco = produto.preco_venda;
+          ul.innerHTML = "";
+        };
+        ul.appendChild(li);
+      });
+    });
+
+    function adicionarProduto() {
+      const produto_id = document.getElementById("produto_id").value;
+      const produto_nome = document.getElementById("produto").value;
+      const quantidade = parseFloat(document.getElementById("quantidade").value);
+      const preco_unitario = parseFloat(document.getElementById("produto").dataset.preco);
+
+      if (!produto_id || !quantidade || quantidade <= 0) {
+        alert("Preencha produto e quantidade corretamente!");
+        return;
+      }
+
+      itensPedido.push({
+        produto_id,
+        nome: produto_nome,
+        quantidade,
+        preco_unitario
+      });
+
+      atualizarTabela();
+      calcularTotal();
+
+      document.getElementById("produto_id").value = "";
+      document.getElementById("produto").value = "";
+      document.getElementById("quantidade").value = "";
+    }
+
+    function atualizarTabela() {
+      const tabela = document.getElementById("tabelaItens");
+      tabela.innerHTML = "";
+
+      itensPedido.forEach((item, index) => {
+        const subtotal = item.quantidade * item.preco_unitario;
+        const row = `
+          <tr>
+            <td class="p-2">${item.nome}</td>
+            <td class="p-2 text-center">${item.quantidade}</td>
+            <td class="p-2 text-center">R$ ${item.preco_unitario.toFixed(2)}</td>
+            <td class="p-2 text-right">R$ ${subtotal.toFixed(2)}</td>
+            <td class="p-2 text-center">
+              <button type="button" onclick="removerItem(${index})" class="text-red-600">Remover</button>
+            </td>
+          </tr>
+        `;
+        tabela.insertAdjacentHTML("beforeend", row);
+      });
+    }
+
+    function calcularTotal() {
+      const total = itensPedido.reduce((sum, item) => sum + item.quantidade * item.preco_unitario, 0);
+      document.getElementById("totalPedido").textContent = total.toFixed(2);
+    }
+
+    function removerItem(index) {
+      itensPedido.splice(index, 1);
+      atualizarTabela();
+      calcularTotal();
+    }
+
+    document.getElementById("pedidoForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const cliente_id = document.getElementById("cliente_id").value || null;
+      const cliente_nome = document.getElementById("cliente").value || "Cliente Avulso";
+      const pago = document.getElementById("pago").value;
+      const data = document.getElementById("data").value;
+      const observacoes = document.getElementById("obs").value;
+
+      if (itensPedido.length === 0) {
+        alert("Adicione pelo menos um item ao pedido.");
+        return;
+      }
+
+      const payload = {
+        cliente_id,
+        pago,
+        data,
+        observacoes,
+        itens: itensPedido
+      };
+
+      try {
+        const response = await fetch("/pedidos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          const pedidoFinalizado = {
+            numero_pedido: result.numero_pedido,
+            data,
+            cliente: cliente_nome,
+            pago,
+            observacoes,
+            itens: itensPedido
+          };
+
+          localStorage.setItem("pedido_finalizado", JSON.stringify(pedidoFinalizado));
+          window.location.href = "recibo.html";
+        } else {
+          alert(result.erro || "Erro ao salvar pedido.");
+        }
+      } catch (error) {
+        console.error("Erro:", error);
+        alert("Erro ao enviar pedido.");
+      }
+    });
+  </script>
 </body>
 </html>
